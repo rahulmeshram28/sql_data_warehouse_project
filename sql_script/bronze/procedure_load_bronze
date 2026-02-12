@@ -1,0 +1,102 @@
+/*
+Procedure: bronze.load_bronze
+
+Description:
+Loads CSV source files into Bronze schema tables.
+Each table is truncated before loading (full refresh).
+Logs number of rows loaded for each table
+If any error occurs, execution stops and the error is reported.
+*/
+
+CREATE OR REPLACE PROCEDURE bronze.load_bronze()
+LANGUAGE plpgsql
+AS $$
+DECLARE 
+	v_rows INT;
+BEGIN
+
+		RAISE NOTICE 'Starting Bronze Load...';
+
+	    RAISE NOTICE 'Loading CRM Tables';
+		
+		--Load CRM Customer Info
+		TRUNCATE TABLE bronze.crm_cust_info;
+		COPY bronze.crm_cust_info
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_crm\cust_info.csv'
+		DELIMITER ','
+		CSV HEADER;
+		
+	    GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'crm_cust_info loaded: % rows', v_rows;
+		
+		--Load CRM Product Info
+		TRUNCATE TABLE bronze.crm_prd_info;
+		COPY bronze.crm_prd_info
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_crm\prd_info.csv'
+		DELIMITER ','
+		CSV HEADER;
+
+        GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'crm_prd_info loaded: % rows', v_rows;
+		
+		--Load CRM Sales Details
+		TRUNCATE TABLE bronze.crm_sales_details;
+		COPY bronze.crm_sales_details
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_crm\sales_details.csv'
+		DELIMITER ','
+		CSV HEADER;
+		
+        GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'crm_sales_details loaded: % rows', v_rows;		
+
+
+
+	    RAISE NOTICE 'Loading ERP Tables';
+
+		--Load ERP Customer Info
+		TRUNCATE TABLE bronze.erp_cust_az12;
+		COPY bronze.erp_cust_az12
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_erp\cust_az12.csv'
+		DELIMITER ','
+		CSV HEADER;
+
+		GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'erp_cust_az12 loaded: % rows', v_rows;	
+
+		--Load ERP Loactions 
+		TRUNCATE TABLE bronze.erp_loc_a101;
+		COPY bronze.erp_loc_a101
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_erp\loc_a101.csv'
+		DELIMITER ','
+		CSV HEADER;
+
+		GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'erp_loc_a101 loaded: % rows', v_rows;
+		
+		--Load ERP Products Category
+		TRUNCATE TABLE  bronze.px_cat_g1v2;
+		COPY  bronze.px_cat_g1v2
+		FROM 'C:\POSTGREY_PROJECT\datawarehouse_dataset\source_erp\px_cat_g1v2.csv'
+		DELIMITER ','
+		CSV HEADER;
+
+		GET DIAGNOSTICS v_rows = ROW_COUNT;
+	    RAISE NOTICE 'px_cat_g1v2 loaded: % rows', v_rows;
+
+
+		RAISE NOTICE 'Bronze Load Completed Successfully.';
+
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE 'Bronze load failed: %', SQLERRM;
+		RAISE;
+
+END;
+$$;
+
+
+
+-- For Execution:
+
+CALL bronze.load_bronze();
+
