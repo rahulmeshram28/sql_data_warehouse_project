@@ -1,0 +1,59 @@
+/*
+===============================================================================
+Quality Checks – Gold Layer
+===============================================================================
+
+Script Purpose:
+    This script performs data quality checks to validate the integrity,
+    consistency, and correctness of the Gold Layer.
+
+    The checks ensure:
+    - Uniqueness of surrogate keys in dimension views
+    - Referential integrity between fact and dimensions
+    - Proper Star Schema relationships
+
+Usage Notes:
+    - All queries should return ZERO rows.
+    - If any query returns records, investigate data inconsistencies.
+
+*/
+
+
+
+-- Check 1: Uniqueness of Customer Key (gold.dim_customers)
+-- Expectation: No duplicate keys
+
+SELECT 
+    customer_key,
+    COUNT(*) AS duplicate_count
+FROM gold.dim_customers
+GROUP BY customer_key
+HAVING COUNT(*) > 1;
+
+
+-- Check 2: Uniqueness of Product Key (gold.dim_products)
+-- Expectation: No duplicate keys
+
+SELECT 
+    product_key,
+    COUNT(*) AS duplicate_count
+FROM gold.dim_products
+GROUP BY product_key
+HAVING COUNT(*) > 1;
+
+
+-- Check 3: Referential Integrity (gold.fact_sales)
+-- Ensures all fact records have matching dimension records
+-- Expectation: No orphan records
+
+SELECT 
+    f.order_number,
+    f.customer_key,
+    f.product_key
+FROM gold.fact_sales f
+LEFT JOIN gold.dim_customers c
+    ON c.customer_key = f.customer_key
+LEFT JOIN gold.dim_products p
+    ON p.product_key = f.product_key
+WHERE c.customer_key IS NULL
+   OR p.product_key IS NULL;
