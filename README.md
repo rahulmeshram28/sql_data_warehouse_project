@@ -68,7 +68,7 @@ Visualization enables:
 - Customer and product performance tracking
 - Business decision support
 
-(Visualization tool used: Power BI / Tableau / Other)
+(Visualization tool used: Power BI )
 
 ---
 
